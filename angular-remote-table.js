@@ -16,16 +16,19 @@ angular.module("remoteTable.tpls", ["template/table/paginate.html", "template/ta
  */
 
 angular.module('remoteTableDirectives', [])
-.directive('remoteTable', function() {
+.directive('remoteTable', function($parse) {
 	  return {
-	    restrict: 'AE',
-	    scope: {headers:'=headers',url:'@url'},
-	    /* transclude and link function necessary to ensure that the isolated scope is used by the enclosed markup */
-	    transclude: true,
-	    link: function(scope, element, attrs, ctrl, transclude) {
-	        transclude(scope, function(clone) {
-	         element.append(clone);
-	        });
+	    restrict: 'A',
+	    scope: true,
+	    link: function(scope, element, attrs, ctrl) {
+	    	scope.url = attrs.url;
+	    	if (!scope.url)
+	    		throw "'url' attribute required for remoteTable directive";
+	    	if (!scope.headers && !attrs.$attr.headers)
+	    		throw "Either the 'headers' attribute is required when the parent scope does not have a 'headers' property";
+	    	if (!scope.headers && attrs.$attr.headers)
+	    		scope.headers = scope.$eval(attrs.headers);
+	        scope.initTable();
 	      },
 	    controller: function($scope, $http, $element){
 	    	this.$scope = $scope;
@@ -53,7 +56,6 @@ angular.module('remoteTableDirectives', [])
 	      $scope.initTable = function () {
 	        $scope.load();
 	      };
-	      $scope.initTable();
 	    }
 	  }
 	})
