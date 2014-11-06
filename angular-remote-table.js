@@ -24,15 +24,33 @@ angular.module('remoteTableDirectives', [])
 	    	scope.url = attrs.url;
 	    	if (!scope.url)
 	    		throw "'url' attribute required for remoteTable directive";
-	    	if (!scope.headers && !attrs.$attr.headers)
-	    		throw "Either the 'headers' attribute is required when the parent scope does not have a 'headers' property";
-	    	if (!scope.headers && attrs.$attr.headers)
-	    		scope.headers = scope.$eval(attrs.headers);
+	    	if (attrs.preProcessResponse)
+	    		this.preProcessResponse = scope.$eval(attrs.preProcessResponse);
+	    	if (attrs.postProcessResponse)
+	    		this.postProcessResponse = scope.$eval(attrs.postProcessResponse);
+	    	if (attrs.processResponse)
+	    		scope.process = scope.$eval(attrs.postProcess);
 	        scope.initTable();
 	      },
 	    controller: function($scope, $http, $element){
 	    	this.$scope = $scope;
-	    	  
+	    	$scope.process = function (response,$scope) {
+				  $scope.count = response.data.count;
+				  if ($scope.settings.page_size){
+					  $scope.settings.pages = Math.ceil($scope.count / $scope.settings.page_size)
+				  }
+				  $scope.rows = response.data.results;
+			  };
+	    	var processResponse = function (response) {
+	    		if (this.preProcessResponse)
+					this.preProcessResponse(response,$scope);
+	    		$scope.process(response,$scope);
+				if (this.postProcessResponse)
+					this.postProcessResponse(response,$scope);
+			  };
+			  
+			  
+			  
 	      	$scope.rows=[];
 	    	$scope.params={}
 	    	$scope.settings = {'page_size':2,'page':1};
@@ -42,15 +60,7 @@ angular.module('remoteTableDirectives', [])
 	    		  if ($scope.settings[k])
 	    			  $scope.params[$scope.parameter_map[k]]=$scope.settings[k];
 	    	  }
-	    	  $http.get($scope.url,{'params':$scope.params}).then(
-	    			  function (response) {
-	    				  $scope.count = response.data.count;
-	    				  if ($scope.settings.page_size){
-	    					  $scope.settings.pages = Math.ceil($scope.count / $scope.settings.page_size)
-	    				  }
-	    				  $scope.rows = response.data.results;
-	    			  }
-	    	  );
+	    	  $http.get($scope.url,{'params':$scope.params}).then(processResponse);
 	    	};
 	    	
 	      $scope.initTable = function () {
@@ -58,6 +68,27 @@ angular.module('remoteTableDirectives', [])
 	      };
 	    }
 	  }
+	})
+	.directive('remoteHeaders', function() {
+	  return {
+	    restrict: 'A',
+	    require: '^remoteTable',
+	    templateUrl: 'template/table/headers.html',
+	    replace: true,
+	    link: function ($scope, element, attrs, remoteTable) {
+	    	if (!$scope.headers && !attrs.$attr.headers)
+	    		throw "Either the 'headers' attribute is required when the parent scope does not have a 'headers' property";
+	    	if (!$scope.headers && attrs.$attr.headers)
+	    		$scope.headers = $scope.$eval(attrs.headers);
+	    	$scope.orderBy = function(header){
+	    		if (remoteTable.$scope.settings.order_by == header.name)
+	    			remoteTable.$scope.settings.order_by = '-' + header.name;
+	    		else
+	    			remoteTable.$scope.settings.order_by = header.name;
+	    		remoteTable.$scope.load();
+	    	};
+	    }
+	   }
 	})
 	.directive('remotePagination', function() {
 	  return {
@@ -92,23 +123,6 @@ angular.module('remoteTableDirectives', [])
 	    			$scope.goToPage(remoteTable.$scope.settings.page - 1)
 	    		}
 	    	}
-	    }
-	   }
-	})
-	.directive('remoteHeaders', function() {
-	  return {
-	    restrict: 'A',
-	    require: '^remoteTable',
-	    templateUrl: 'template/table/headers.html',
-	    replace: true,
-	    link: function ($scope, element, attrs, remoteTable) {
-	    	$scope.orderBy = function(header){
-	    		if (remoteTable.$scope.settings.order_by == header.name)
-	    			remoteTable.$scope.settings.order_by = '-' + header.name;
-	    		else
-	    			remoteTable.$scope.settings.order_by = header.name;
-	    		remoteTable.$scope.load();
-	    	};
 	    }
 	   }
 	});
