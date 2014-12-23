@@ -34,6 +34,8 @@ angular.module('remoteTableDirectives', [])
 	      },
 	    controller: function($scope, $http, $element){
 	    	this.$scope = $scope;
+	    	//TO trigger a load, use: "$scope.$broadcast('ReloadTable');"
+	    	$scope.$on("ReloadTable",function(){$scope.load();});
 	    	$scope.process = function (response,$scope) {
 				  $scope.count = response.data.count;
 				  if ($scope.settings.page_size){
