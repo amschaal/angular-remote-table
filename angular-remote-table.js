@@ -1,5 +1,5 @@
 angular.module("remoteTable", ["remoteTable.tpls", "remoteTableDirectives"]);
-angular.module("remoteTable.tpls", ["template/table/paginate.html", "template/table/headers.html", "template/table/header.html"]);
+angular.module("remoteTable.tpls", ["template/table/paginate.html", "template/table/headers.html", "template/table/header.html","template/table/filter.html"]);
 /*
  * <div remote-table headers="headers" url="/api/experiments/">
  *		<input ng-model="params.search" ng-change="load()" placeholder="Search"/>
@@ -98,6 +98,29 @@ angular.module('remoteTableDirectives', [])
 	    }
 	   }
 	})
+	.directive('fieldFilter', function() {
+	  return {
+	    restrict: 'A',
+	    require: '^remoteTable',
+	    templateUrl: 'template/table/filter.html',
+	    scope: true,
+	    replace: true,
+	    link: function ($scope, element, attrs, remoteTable) {
+    		$scope.field = attrs.field;
+    		$scope.value = $scope.$eval(attrs.value);
+    		$scope.filter = function() {
+    			$scope.params[$scope.field]=$scope.value;
+    			$scope.load();
+	    	};
+	    	$scope.unfilter = function(){
+	    		$scope.removeParameter($scope.field);
+	    	}
+	    	$scope.filtered = function(){
+	    		return $scope.params[$scope.field];
+	    	}
+	    }
+	   }
+	})
 	.directive('remoteHeader', function() {
 	  return {
 	    restrict: 'A',
@@ -154,7 +177,11 @@ angular.module('template/table/headers.html', []).run(['$templateCache', functio
 	"<thead><tr><th ng-repeat=\"header in headers\" ng-click=\"orderBy(header)\">{[header.label]} <i ng-if=\"settings.order_by==header.name || settings.order_by=='-'+header.name\" class=\"glyphicon\" ng-class=\"{'glyphicon-sort-by-attributes': header.name == settings.order_by, 'glyphicon-sort-by-attributes-alt': '-'+header.name == settings.order_by}\"></i></th></tr></thead>"
 	  );
 	}]);
-
+angular.module('template/table/filter.html', []).run(['$templateCache', function($templateCache) {
+	  $templateCache.put('template/table/filter.html',
+			  '<span><a ng-click="filter();" ng-hide="filtered()"><span class="glyphicon glyphicon-filter" aria-hidden="true"></span></a><a ng-show="filtered()" ng-click="unfilter()"><span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span></a></span>'
+	  );
+	}]);
 angular.module('template/table/paginate.html', []).run(['$templateCache', function($templateCache) {
 	  $templateCache.put('template/table/paginate.html',
 			  "<div class=\"row\"> \
