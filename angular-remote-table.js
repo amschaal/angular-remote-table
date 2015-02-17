@@ -1,5 +1,5 @@
 angular.module("remoteTable", ["remoteTable.tpls", "remoteTableDirectives"]);
-angular.module("remoteTable.tpls", ["template/table/paginate.html", "template/table/headers.html", "template/table/header.html","template/table/filter.html"]);
+angular.module("remoteTable.tpls", ["template/table/paginate.html", "template/table/headers.html", "template/table/header.html","template/table/filter.html","template/table/filter_tags.html"]);
 /*
  * <div remote-table headers="headers" url="/api/experiments/">
  *		<input ng-model="params.search" ng-change="load()" placeholder="Search"/>
@@ -53,6 +53,7 @@ angular.module('remoteTableDirectives', [])
 			  
 	      	$scope.rows=[];
 	    	$scope.params={};
+	    	$scope.filters={};
 	    	$scope.settings = {'page_size':5,'page':1};
 	    	$scope.parameter_map={'order_by':'ordering','page':'page','page_size':'page_size'};
 	    	$scope.load = function () {
@@ -67,6 +68,20 @@ angular.module('remoteTableDirectives', [])
 	    		delete $scope.params[key];
 	    		$scope.load();
 	    	};
+	    	$scope.addParameter = function(key,value){
+	    		$scope.params[key]=value;
+	    		$scope.load();
+	    	};
+	    	$scope.addFilter = function(key,value,alias){
+	    		if(!alias)
+	    			alias=key;
+	    		$scope.filters[key]={key:key,value:value,alias:alias};
+	    		$scope.addParameter(key,value);
+	    	}
+	    	$scope.removeFilter = function(key){
+	    		delete $scope.filters[key];
+	    		$scope.removeParameter(key);
+	    	}
 	    	$scope.getOrderField = function(header){
 	    		return header.order_by ? header.order_by : header.name;
 	    	};
@@ -107,20 +122,35 @@ angular.module('remoteTableDirectives', [])
 	    replace: true,
 	    link: function ($scope, element, attrs, remoteTable) {
     		$scope.field = attrs.field;
+    		$scope.alias = attrs.alias;
     		$scope.value = $scope.$eval(attrs.value);
     		$scope.filter = function() {
-    			$scope.params[$scope.field]=$scope.value;
-    			$scope.load();
+    			$scope.addFilter($scope.field,$scope.value,$scope.alias);
 	    	};
 	    	$scope.unfilter = function(){
-	    		$scope.removeParameter($scope.field);
+	    		$scope.removeFilter($scope.field);
 	    	}
 	    	$scope.filtered = function(){
-	    		return $scope.params[$scope.field];
+	    		return $scope.filters[$scope.field];
 	    	}
 	    }
 	   }
 	})
+	.directive('filterTags', function() {
+	  return {
+	    restrict: 'A',
+	    require: '^remoteTable',
+	    templateUrl: 'template/table/filter_tags.html',
+	    scope: true,
+	    replace: true,
+	    link: function ($scope, element, attrs, remoteTable) {
+//    		$scope.field = attrs.field;
+//    		$scope.value = $scope.$eval(attrs.value);
+    		
+	    }
+	   }
+	})
+//	<span ng-repeat="(k,v) in filters"><a href="#" ng-click="removeParameter(k)">x</a> {[k]}={[v.value]}</span>
 	.directive('remoteHeader', function() {
 	  return {
 	    restrict: 'A',
@@ -180,6 +210,11 @@ angular.module('template/table/headers.html', []).run(['$templateCache', functio
 angular.module('template/table/filter.html', []).run(['$templateCache', function($templateCache) {
 	  $templateCache.put('template/table/filter.html',
 			  '<span><a ng-click="filter();" ng-hide="filtered()"><span class="glyphicon glyphicon-filter" aria-hidden="true"></span></a><a ng-show="filtered()" ng-click="unfilter()"><span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span></a></span>'
+	  );
+	}]);
+angular.module('template/table/filter_tags.html', []).run(['$templateCache', function($templateCache) {
+	  $templateCache.put('template/table/filter_tags.html',
+			  '<div class="filter-tags"><span class="filter-tag" ng-repeat="(k,v) in filters"><a ng-click="removeFilter(k)">X</a> {[v.alias]} = {[v.value]}</span></div>'
 	  );
 	}]);
 angular.module('template/table/paginate.html', []).run(['$templateCache', function($templateCache) {

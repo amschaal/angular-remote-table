@@ -1,0 +1,17 @@
+/* Most styles are inherited from Bootstrap CSS */
+/* Angular Remote Table */
+.filter-tags{
+	padding:2px;
+}
+.filter-tag{
+	background-color: #428bca;
+	padding: 3px;
+	border-radius: 3px;
+	color:white;
+	margin-right: 3px;
+}
+.filter-tag a{
+	color:white;	
+	cursor:pointer;
+}
+/* End Angular Remote Table */
