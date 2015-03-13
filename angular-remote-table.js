@@ -58,7 +58,9 @@ angular.module('remoteTableDirectives', [])
 	    	$scope.filters={};
 	    	$scope.settings = {'page_size':5,'page':1};
 	    	$scope.parameter_map={'order_by':'ordering','page':'page','page_size':'page_size'};
-	    	$scope.load = function () {
+	    	$scope.load = function (page) {
+	    	  page = page ? page : 1; //default to first page for any parameter change except for when specifically paging
+	    	  $scope.settings.page = page;
 	    	  var params=angular.copy($scope.params);
 	    	  for (k in $scope.parameter_map){
 	    		  if ($scope.settings[k])
@@ -133,7 +135,9 @@ angular.module('remoteTableDirectives', [])
 	    		$scope.removeFilter($scope.field);
 	    	}
 	    	$scope.filtered = function(){
-	    		return $scope.filters[$scope.field];
+	    		if (!$scope.filters[$scope.field])
+	    			return false;
+	    		return $scope.filters[$scope.field].value == $scope.value;
 	    	}
 	    }
 	   }
@@ -180,9 +184,8 @@ angular.module('remoteTableDirectives', [])
 	    		$scope.goToPage(1);
 	    	};
 	    	$scope.goToPage = function (page){
-	    		remoteTable.$scope.settings.page = page;
-	    		remoteTable.$scope.settings.page = page;
-	    		remoteTable.$scope.load();
+//	    		remoteTable.$scope.settings.page = page;
+	    		remoteTable.$scope.load(page);
 	    	};
 	    	$scope.next = function(){
 	    		if (remoteTable.$scope.settings.page < remoteTable.$scope.settings.pages){
