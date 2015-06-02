@@ -56,7 +56,7 @@ angular.module('remoteTableDirectives', [])
 	      	$scope.rows=[];
 	    	$scope.params={};
 	    	$scope.filters={};
-	    	$scope.settings = {'page_size':5,'page':1};
+	    	$scope.settings = {'page_size':25,'page':1};
 	    	$scope.parameter_map={'order_by':'ordering','page':'page','page_size':'page_size'};
 	    	$scope.load = function (page) {
 	    	  page = page ? page : 1; //default to first page for any parameter change except for when specifically paging
@@ -237,7 +237,7 @@ angular.module('template/table/paginate.html', []).run(['$templateCache', functi
 			  	 \
 			  <div class=\"col-sm-3\"> \
 			  	<div class=\"btn-group\"> \
-			  	  <div type=\"button\" ng-repeat=\"size in [5,10,25]\" class=\"btn btn-default\" ng-click=\"setPageSize(size)\" ng-class=\"{active: size == settings.page_size}\">{[size]}</div> \
+			  	  <div type=\"button\" ng-repeat=\"size in [10,25,50,100]\" class=\"btn btn-default\" ng-click=\"setPageSize(size)\" ng-class=\"{active: size == settings.page_size}\">{[size]}</div> \
 			  	</div> \
 			  </div> \
 			  </div>"
