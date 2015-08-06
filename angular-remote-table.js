@@ -76,10 +76,10 @@ angular.module('remoteTableDirectives', [])
 	    		$scope.params[key]=value;
 	    		$scope.load();
 	    	};
-	    	$scope.addFilter = function(key,value,alias){
+	    	$scope.addFilter = function(key,value,alias,hidden){
 	    		if(!alias)
 	    			alias=key;
-	    		$scope.filters[key]={key:key,value:value,alias:alias};
+	    		$scope.filters[key]={key:key,value:value,alias:alias,hidden:hidden};
 	    		$scope.addParameter(key,value);
 	    	}
 	    	$scope.removeFilter = function(key){
@@ -219,7 +219,7 @@ angular.module('template/table/filter.html', []).run(['$templateCache', function
 	}]);
 angular.module('template/table/filter_tags.html', []).run(['$templateCache', function($templateCache) {
 	  $templateCache.put('template/table/filter_tags.html',
-			  '<div class="filter-tags"><span class="filter-tag" ng-repeat="(k,v) in filters"><a ng-click="removeFilter(k)">X</a> {[v.alias]} = {[v.value]}</span></div>'
+			  '<div class="filter-tags"><span class="filter-tag" ng-repeat="(k,v) in filters" ng-if="!v.hidden"><a ng-click="removeFilter(k)">X</a> {[v.alias]} = {[v.value]}</span></div>'
 	  );
 	}]);
 angular.module('template/table/paginate.html', []).run(['$templateCache', function($templateCache) {
